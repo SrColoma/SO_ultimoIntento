@@ -3,9 +3,22 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "bmp.h"
+#include <math.h>
 
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Uso: %s <altura_inicio> <altura_fin>\n", argv[0]);
+        return 1;
+    }
 
-int main() {
+    int startHeight = atoi(argv[1]);
+    int endHeight = atoi(argv[2]);
+
+    if (startHeight < 0 || endHeight < 0 || startHeight >= endHeight) {
+        fprintf(stderr, "Alturas inválidas\n");
+        return 1;
+    }
+
     key_t key = ftok("shmfile", 65);  // Crear una clave única
     
     BMP_Image *shmaddr = getSharedMemoryImage(key);
@@ -14,12 +27,10 @@ int main() {
     int width = image->header.width_px;
     int height = image->norm_height;
 
-    // Crear una copia de la imagen para almacenar los resultados
-    size_t imageSize = sizeof(BMP_Image) + width * height * sizeof(Pixel);
-    BMP_Image* resultImage = (BMP_Image*)malloc(imageSize);
-    resultImage->header = image->header;
-    resultImage->norm_height = image->norm_height;
-    resultImage->bytes_per_pixel = image->bytes_per_pixel;
+    if (endHeight > height) {
+        fprintf(stderr, "Altura fin excede la altura de la imagen\n");
+        return 1;
+    }
 
     // Definir los kernels de Sobel
     int Gx[3][3] = {
@@ -34,41 +45,28 @@ int main() {
         { 1,  2,  1}
     };
 
-    // Aplicar el filtro de Sobel
-    for (int i = 1; i < height - 1; i++) {
+    // Aplicar el filtro de Sobel solo en el rango especificado
+    for (int i = startHeight; i < endHeight; i++) {
         for (int j = 1; j < width - 1; j++) {
-            int sumX_red = 0, sumY_red = 0;
-            int sumX_green = 0, sumY_green = 0;
-            int sumX_blue = 0, sumY_blue = 0;
+            int sumX = 0, sumY = 0;
 
             for (int k = -1; k <= 1; k++) {
                 for (int l = -1; l <= 1; l++) {
                     int index = (i + k) * width + (j + l);
-                    sumX_red += image->pixels[index].red * Gx[k + 1][l + 1];
-                    sumY_red += image->pixels[index].red * Gy[k + 1][l + 1];
-                    sumX_green += image->pixels[index].green * Gx[k + 1][l + 1];
-                    sumY_green += image->pixels[index].green * Gy[k + 1][l + 1];
-                    sumX_blue += image->pixels[index].blue * Gx[k + 1][l + 1];
-                    sumY_blue += image->pixels[index].blue * Gy[k + 1][l + 1];
+                    int gray = (image->pixels[index].red + image->pixels[index].green + image->pixels[index].blue) / 3;
+                    sumX += gray * Gx[k + 1][l + 1];
+                    sumY += gray * Gy[k + 1][l + 1];
                 }
             }
 
             int index = i * width + j;
-            resultImage->pixels[index].red = (uint8_t)fmin(sqrt(sumX_red * sumX_red + sumY_red * sumY_red), 255);
-            resultImage->pixels[index].green = (uint8_t)fmin(sqrt(sumX_green * sumX_green + sumY_green * sumY_green), 255);
-            resultImage->pixels[index].blue = (uint8_t)fmin(sqrt(sumX_blue * sumX_blue + sumY_blue * sumY_blue), 255);
+            int magnitude = (int)fmin(sqrt(sumX * sumX + sumY * sumY), 255);
+
+            image->pixels[index].red = magnitude;
+            image->pixels[index].green = magnitude;
+            image->pixels[index].blue = magnitude;
         }
     }
-
-    // Copiar los resultados de vuelta a la imagen original
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            int index = i * width + j;
-            image->pixels[index] = resultImage->pixels[index];
-        }
-    }
-
-    free(resultImage);
 
     shmdt(shmaddr);  // Desadjuntar la memoria compartida
     return 0;
