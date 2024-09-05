@@ -122,12 +122,12 @@ void printBMPImage(BMP_Image* image) {
 BMP_Image* getSharedMemoryImage(key_t key) {
     int shmid = shmget(key, SHM_SIZE, 0666);
     if (shmid < 0) {
-        perror("Error al obtener el segmento de memoria compartida");
+        perror("getSharedMemoryImage: Error shmget");
         exit(1);
     }
     BMP_Image* shmaddr = (BMP_Image*)shmat(shmid, (void*)0, 0);
     if (shmaddr == (BMP_Image*)(-1)) {
-        perror("Error al adjuntar el segmento de memoria compartida");
+        perror("getSharedMemoryImage: Error shmat");
         exit(1);
     }
     return shmaddr;
@@ -136,11 +136,11 @@ BMP_Image* getSharedMemoryImage(key_t key) {
 void liberarMemoriaCompartida(key_t key) {
     int shmid = shmget(key, SHM_SIZE, 0666);
     if (shmid < 0) {
-        perror("Error al obtener el segmento de memoria compartida");
+        perror("liberarMemoriaCompartida: Error shmget");
         exit(1);
     }
     if (shmctl(shmid, IPC_RMID, NULL) < 0) {
-        perror("Error al liberar el segmento de memoria compartida");
+        perror("liberarMemoriaCompartida: Error shmctl");
         exit(1);
     }
 }
