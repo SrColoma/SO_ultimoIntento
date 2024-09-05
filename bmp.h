@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -12,6 +14,8 @@
 #define MEMORY_ERROR 3
 #define VALID_ERROR 4
 #define HEADER_SIZE 54
+
+#define SHM_SIZE sizeof(BMP_Image)  // Tamaño del segmento de memoria compartida
 
 #pragma pack(1)
 
@@ -56,5 +60,7 @@ void freeImage(BMP_Image* image);
 int checkBMPValid(BMP_Header* header);
 void printBMPHeader(BMP_Header* header);
 void printBMPImage(BMP_Image* image);
+BMP_Image* getSharedMemoryImage(key_t key, int size);
+void liberarMemoriaCompartida(key_t key);
 
 #endif /* _BMP_H_ */

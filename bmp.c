@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include "bmp.h"
 
 // Función para imprimir errores
@@ -116,4 +118,32 @@ void printBMPImage(BMP_Image* image) {
     printBMPHeader(&(image->header));
     printf("Altura normalizada: %d\n", image->norm_height);
     printf("Bytes por píxel: %d\n", image->bytes_per_pixel);
+}
+
+BMP_Image* getSharedMemoryImage(key_t key, int size) {
+    printf("shmget\n");
+    int shmid = shmget(key, size, 0666);
+    if (shmid < 0) {
+        perror("Error al obtener el segmento de memoria compartida");
+        exit(1);
+    }
+    printf("shmat\n");
+    BMP_Image* shmaddr = (BMP_Image*)shmat(shmid, (void*)0, 0);
+    if (shmaddr == (BMP_Image*)(-1)) {
+        perror("Error al adjuntar el segmento de memoria compartida");
+        exit(1);
+    }
+    return shmaddr;
+}
+
+void liberarMemoriaCompartida(key_t key) {
+    int shmid = shmget(key, SHM_SIZE, 0666);
+    if (shmid < 0) {
+        perror("Error al obtener el segmento de memoria compartida");
+        exit(1);
+    }
+    if (shmctl(shmid, IPC_RMID, NULL) < 0) {
+        perror("Error al liberar el segmento de memoria compartida");
+        exit(1);
+    }
 }
