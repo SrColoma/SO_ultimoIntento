@@ -38,3 +38,14 @@ make clean
 ### cli
 
 la bandera -r al final es opcional, si se coloca el programa se ejecutara de manera recurrente, y se pedira una imagen de entrada, salida y otro numero de hilos cada vez que se termine de procesar una imagen.
+
+## diagramas
+
+diagrama de ejecucion
+
+
+![ejecucion](ejecucion.png)
+
+diagrama de uso de memoria
+
+![uso](uso.png)
