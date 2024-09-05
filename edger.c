@@ -32,6 +32,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Crear una copia de la imagen para almacenar los resultados
+    size_t imageSize = sizeof(BMP_Image) + width * height * sizeof(Pixel);
+    BMP_Image* resultImage = (BMP_Image*)malloc(imageSize);
+    resultImage->header = image->header;
+    resultImage->norm_height = image->norm_height;
+    resultImage->bytes_per_pixel = image->bytes_per_pixel;
+
+    // Copiar los píxeles originales a resultImage
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            int index = i * width + j;
+            resultImage->pixels[index] = image->pixels[index];
+        }
+    }
+
     // Definir los kernels de Sobel
     int Gx[3][3] = {
         {-1, 0, 1},
@@ -45,7 +60,7 @@ int main(int argc, char *argv[]) {
         { 1,  2,  1}
     };
 
-    // Aplicar el filtro de Sobel solo en el rango especificado
+    // Aplicar el filtro de Sobel
     for (int i = startHeight; i < endHeight; i++) {
         for (int j = 1; j < width - 1; j++) {
             int sumX = 0, sumY = 0;
@@ -62,11 +77,21 @@ int main(int argc, char *argv[]) {
             int index = i * width + j;
             int magnitude = (int)fmin(sqrt(sumX * sumX + sumY * sumY), 255);
 
-            image->pixels[index].red = magnitude;
-            image->pixels[index].green = magnitude;
-            image->pixels[index].blue = magnitude;
+            resultImage->pixels[index].red = magnitude;
+            resultImage->pixels[index].green = magnitude;
+            resultImage->pixels[index].blue = magnitude;
         }
     }
+
+    // Copiar los resultados de vuelta a la imagen original
+    for (int i = startHeight; i < endHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            int index = i * width + j;
+            image->pixels[index] = resultImage->pixels[index];
+        }
+    }
+
+    free(resultImage);
 
     shmdt(shmaddr);  // Desadjuntar la memoria compartida
     return 0;
