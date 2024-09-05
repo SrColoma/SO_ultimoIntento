@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    printf("Publisher: abriendo archivo\n");
     char *filename = argv[1];
     key_t key = ftok("shmfile", 65);  // Crear una clave única
     FILE *file = fopen(filename, "rb");
@@ -25,6 +26,7 @@ int main(int argc, char *argv[]) {
     }
     fclose(file);
 
+    printf("Publisher: recservando memoria compartida\n");
     int imageSize = tempImage->header.size;
     int shmid = shmget(key, imageSize, 0666 | IPC_CREAT);
     if (shmid < 0) {
@@ -39,9 +41,10 @@ int main(int argc, char *argv[]) {
         freeImage(tempImage);
         exit(1);
     }
-
+    printf("Publisher: pblicando imagen en memoria compartida\n");
     memcpy(shmaddr, tempImage, imageSize);
     freeImage(tempImage);
 
+    printf("Publisher: imagen publicada en memoria compartida\n");
     return 0;
 }
