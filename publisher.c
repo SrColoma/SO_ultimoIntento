@@ -4,13 +4,17 @@
 #include <sys/shm.h>
 #include "bmp.h"
 
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        exit(1);
+    }
 
-
-int main() {
+    char *filename = argv[1];
     key_t key = ftok("shmfile", 65);  // Crear una clave única
-    FILE *file = fopen("car.bmp", "rb");
+    FILE *file = fopen(filename, "rb");
     if (file == NULL) {
-        perror("Error al abrir car.bmp");
+        perror("Error al abrir el archivo");
         exit(1);
     }
 
@@ -20,7 +24,7 @@ int main() {
         exit(1);
     }
     fclose(file);
-    // liberarMemoriaCompartida(key);
+
     int imageSize = tempImage->header.size;
     int shmid = shmget(key, imageSize, 0666 | IPC_CREAT);
     if (shmid < 0) {
@@ -38,4 +42,6 @@ int main() {
 
     memcpy(shmaddr, tempImage, imageSize);
     freeImage(tempImage);
+
+    return 0;
 }

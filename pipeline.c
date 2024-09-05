@@ -7,7 +7,16 @@
 #include <unistd.h>
 #include "bmp.h"
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 4) {
+        fprintf(stderr, "Usage: %s <inputfile> <outputfile> <num_threads>\n", argv[0]);
+        exit(1);
+    }
+
+    char *inputfile = argv[1];
+    char *outputfile = argv[2];
+    char *num_threads = argv[3];
+
     key_t key = ftok("shmfile", 65);  // Crear una clave única
     pid_t pid_publisher, pid_inverter, pid_blurrer;
 
@@ -17,7 +26,7 @@ int main() {
         perror("Error en fork");
         exit(1);
     } else if (pid_publisher == 0) {
-        char *args[] = {"./publisher", NULL};
+        char *args[] = {"./publisher", inputfile, NULL};
         execvp(args[0], args);
         perror("Error en execvp");
         exit(1);
@@ -41,7 +50,6 @@ int main() {
         exit(1);
     } else if (pid_inverter == 0) {
         char *args[] = {"./blurrer",halfheight_str,height_str, NULL};
-        // char *args[] = {"./blurrer","1",halfheight_str, NULL};
         execvp(args[0], args);
         perror("Error en execvp up");
         exit(1);
@@ -53,7 +61,6 @@ int main() {
         perror("Error en fork");
         exit(1);
     } else if (pid_blurrer == 0) {
-        // char *args[] = {"./edger",halfheight_str,height_str, NULL};
         char *args[] = {"./edger","1",halfheight_str, NULL};
         execvp(args[0], args);
         perror("Error en execvp down");
@@ -66,7 +73,7 @@ int main() {
 
     // Código restante
     // BMP_Image *shmaddr = getSharedMemoryImage(key);
-    writeImage("car_processed.bmp", shmaddr);
+    writeImage(outputfile, shmaddr);
     shmdt(shmaddr);
     liberarMemoriaCompartida(key);
 
