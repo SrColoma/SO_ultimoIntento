@@ -8,16 +8,8 @@
 
 int main() {
     key_t key = ftok("shmfile", 65);  // Crear una clave única
-    int shmid = shmget(key, SHM_SIZE, 0666);  // Obtener el segmento de memoria compartida
-    if (shmid < 0) {
-        perror("Error en shmget");
-        exit(1);
-    }
-    BMP_Image *shmaddr = (BMP_Image *)shmat(shmid, (void *)0, 0);  // Adjuntar el segmento de memoria compartida
-    if (shmaddr == (BMP_Image *)-1) {
-        perror("Error en shmat");
-        exit(1);
-    }
+    
+    BMP_Image *shmaddr = getSharedMemoryImage(key);
 
     BMP_Image* image = shmaddr;
         int width = image->header.width_px;

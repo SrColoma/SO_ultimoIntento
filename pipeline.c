@@ -53,15 +53,10 @@ int main() {
         
     } else {
         wait(NULL);
-        file = fopen("modificado.bmp", "wb");
-        if (file == NULL) {
-            perror("Error al abrir modificado.bmp");
-            exit(1);
-        }
+        
         writeImage("modificado.bmp", shmaddr);
-        fclose(file);
         shmdt(shmaddr);
-        shmctl(shmid, IPC_RMID, NULL);
+        liberarMemoriaCompartida(key);
     }
     return 0;
 }

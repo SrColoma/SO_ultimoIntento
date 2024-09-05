@@ -76,7 +76,6 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
         printError(FILE_ERROR);
         return;
     }
-
     fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
     int dataSize = dataImage->header.width_px * dataImage->norm_height * dataImage->bytes_per_pixel;
     fwrite(dataImage->pixels, dataSize, 1, destFile);
@@ -120,14 +119,12 @@ void printBMPImage(BMP_Image* image) {
     printf("Bytes por píxel: %d\n", image->bytes_per_pixel);
 }
 
-BMP_Image* getSharedMemoryImage(key_t key, int size) {
-    printf("shmget\n");
-    int shmid = shmget(key, size, 0666);
+BMP_Image* getSharedMemoryImage(key_t key) {
+    int shmid = shmget(key, SHM_SIZE, 0666);
     if (shmid < 0) {
         perror("Error al obtener el segmento de memoria compartida");
         exit(1);
     }
-    printf("shmat\n");
     BMP_Image* shmaddr = (BMP_Image*)shmat(shmid, (void*)0, 0);
     if (shmaddr == (BMP_Image*)(-1)) {
         perror("Error al adjuntar el segmento de memoria compartida");
