@@ -4,7 +4,7 @@
 #include <sys/shm.h>
 #include "bmp.h"
 
-#define SHM_SIZE sizeof(BMP_Image)  // Tamaño del segmento de memoria compartida
+// #define SHM_SIZE sizeof(BMP_Image)  // Tamaño del segmento de memoria compartida
 
 int main() {
     key_t key = ftok("shmfile", 65);  // Crear una clave única
