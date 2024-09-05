@@ -4,3 +4,15 @@
 /inverter.o
 /pipeline
 /inverter
+
+/blurrer
+/blurrer.o
+/bmp.o
+/combiner
+/combiner.o
+/edge_detector
+/edge_detector.o
+/main.o
+/pipeline
+/publisher
+/publisher.o

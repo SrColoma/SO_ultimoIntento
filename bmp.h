@@ -60,7 +60,7 @@ void freeImage(BMP_Image* image);
 int checkBMPValid(BMP_Header* header);
 void printBMPHeader(BMP_Header* header);
 void printBMPImage(BMP_Image* image);
-BMP_Image* getSharedMemoryImage(key_t key, int size);
+BMP_Image* getSharedMemoryImage(key_t key);
 void liberarMemoriaCompartida(key_t key);
 
 #endif /* _BMP_H_ */
