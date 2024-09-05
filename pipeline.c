@@ -45,19 +45,11 @@ int main() {
         perror("Error en fork");
         exit(1);
     } else if (pid == 0) {
-        BMP_Image* image = shmaddr;
-        int width = image->header.width_px;
-        int height = image->norm_height;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                int index = i * width + j;
-                image->pixels[index].red = 255 - image->pixels[index].red;
-                image->pixels[index].green = 255 - image->pixels[index].green;
-                image->pixels[index].blue = 255 - image->pixels[index].blue;
-            }
-        }
-        shmdt(shmaddr);
-        exit(0);
+        //ejecuta ./inverter
+        char *args[] = {"./inverter", NULL};
+        execvp(args[0], args);
+        perror("Error en execvp");
+        exit(1);
     } else {
         wait(NULL);
         file = fopen("modificado.bmp", "wb");
